@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="28e1536b-7fd9-4ef4-925f-6281782efec1" name="Default Changelist" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ProjectId" id="1qWcC2XqTFFiR50WVmZfPsspN0y" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+  </component>
+  <component name="RunManager">
+    <configuration name="Unnamed" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="scheme_proj" />
+      <option name="INTERPRETER_OPTIONS" value="scheme.py patch.scm" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="C:\Users\54901\AppData\Local\Programs\Python\Python38-32\python.exe" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="28e1536b-7fd9-4ef4-925f-6281782efec1" name="Default Changelist" comment="" />
+      <created>1617198655885</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1617198655885</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="207" y="141" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1617198881917">
+      <screen x="0" y="0" width="1500" height="970" />
+    </state>
+    <state x="207" y="141" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1500.970@0.0.1500.970" timestamp="1617198881917" />
+    <state x="532" y="241" key="FileChooserDialogImpl" timestamp="1617198879006">
+      <screen x="0" y="0" width="1500" height="970" />
+    </state>
+    <state x="532" y="241" key="FileChooserDialogImpl/0.0.1500.970@0.0.1500.970" timestamp="1617198879006" />
+    <state width="1466" height="257" key="GridCell.Tab.0.bottom" timestamp="1617198845048">
+      <screen x="0" y="0" width="1500" height="970" />
+    </state>
+    <state width="1466" height="257" key="GridCell.Tab.0.bottom/0.0.1500.970@0.0.1500.970" timestamp="1617198845048" />
+    <state width="1466" height="257" key="GridCell.Tab.0.center" timestamp="1617198845048">
+      <screen x="0" y="0" width="1500" height="970" />
+    </state>
+    <state width="1466" height="257" key="GridCell.Tab.0.center/0.0.1500.970@0.0.1500.970" timestamp="1617198845048" />
+    <state width="1466" height="257" key="GridCell.Tab.0.left" timestamp="1617198845045">
+      <screen x="0" y="0" width="1500" height="970" />
+    </state>
+    <state width="1466" height="257" key="GridCell.Tab.0.left/0.0.1500.970@0.0.1500.970" timestamp="1617198845045" />
+    <state width="1466" height="257" key="GridCell.Tab.0.right" timestamp="1617198845048">
+      <screen x="0" y="0" width="1500" height="970" />
+    </state>
+    <state width="1466" height="257" key="GridCell.Tab.0.right/0.0.1500.970@0.0.1500.970" timestamp="1617198845048" />
+  </component>
+</project>
