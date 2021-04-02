@@ -1,0 +1,6 @@
+;(define (abs x)
+;        (define (abs_sub x) (- x 1))
+;        (abs_sub (+ x 2))
+;)
+;(abs 3)
+(define (abs x) x)

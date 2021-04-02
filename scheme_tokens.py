@@ -11,7 +11,6 @@ This file also includes some features of Scheme that have not been addressed
 in the course, such as quasiquoting and Scheme strings.
 """
 
-from ucb import main
 import itertools
 import string
 import sys
@@ -122,12 +121,3 @@ def count_tokens(input):
     return len(list(filter(lambda x: x not in DELIMITERS,
                            itertools.chain(*tokenize_lines(input)))))
 
-@main
-def run(*args):
-    import argparse
-    parser = argparse.ArgumentParser(description='Count Scheme tokens.')
-    parser.add_argument('file', nargs='?',
-                        type=argparse.FileType('r'), default=sys.stdin,
-                        help='input file to be counted')
-    args = parser.parse_args()
-    print('counted', count_tokens(args.file), 'non-delimiter tokens')

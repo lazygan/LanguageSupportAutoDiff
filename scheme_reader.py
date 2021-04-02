@@ -11,11 +11,8 @@ represented by their corresponding type in Python:
 The __repr__ method of a Scheme value will return a Python expression that
 would be evaluated to the value, where possible.
 
-The __str__ method of a Scheme value will return a Scheme expression that
-would be read to the value, where possible.
 """
 
-from ucb import main, trace, interact
 from scheme_tokens import tokenize_lines, DELIMITERS
 from buffer import Buffer, LineReader
 
@@ -40,16 +37,6 @@ class Pair:
 
     def __repr__(self):
         return 'Pair({0}, {1})'.format(repr(self.first), repr(self.second))
-
-    def __str__(self):
-        s = '(' + str(self.first)
-        second = self.second
-        while isinstance(second, Pair):
-            s += ' ' + str(second.first)
-            second = second.second
-        if second is not nil:
-            s += ' . ' + str(second)
-        return s + ')'
 
     def __len__(self):
         n, second = 1, self.second
@@ -78,9 +65,6 @@ class nil:
 
     def __repr__(self):
         return 'nil'
-
-    def __str__(self):
-        return '()'
 
     def __len__(self):
         return 0
@@ -118,11 +102,6 @@ def scheme_read(src):
         "*** YOUR CODE HERE ***"
         return read_tail(src)
         # END PROBLEM 1
-    elif val == "'":
-        # BEGIN PROBLEM 7
-        "*** YOUR CODE HERE ***"
-        return Pair('quote', Pair(scheme_read(src), nil))
-        # END PROBLEM 7
     elif val not in DELIMITERS:
         return val
     else:
@@ -176,6 +155,3 @@ def buffer_lines(lines, prompt='scm> '):
     input_lines = LineReader(lines, prompt)
     return Buffer(tokenize_lines(input_lines))
 
-def read_line(line):
-    """Read a single string LINE as a Scheme expression."""
-    return scheme_read(Buffer(tokenize_lines([line])))
