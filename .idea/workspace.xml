@@ -2,15 +2,26 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="28e1536b-7fd9-4ef4-925f-6281782efec1" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/dsl_eval.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/opengl_logic.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/optimization.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Patch.py" beforeDir="false" afterPath="$PROJECT_DIR$/Patch.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Patch.py" beforeDir="false" afterPath="$PROJECT_DIR$/patch.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/patch.scm" beforeDir="false" afterPath="$PROJECT_DIR$/patch.scm" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scheme.py" beforeDir="false" afterPath="$PROJECT_DIR$/scheme.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scheme.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test.scm" beforeDir="false" afterPath="$PROJECT_DIR$/test.scm" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -42,7 +53,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="" />
-      <option name="PARAMETERS" value="scheme.py test.scm" />
+      <option name="PARAMETERS" value="main.py test.scm" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -52,7 +63,7 @@
     </configuration>
     <configuration name="Unnamed" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="scheme_proj" />
-      <option name="INTERPRETER_OPTIONS" value="scheme.py patch.scm" />
+      <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
@@ -63,7 +74,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="" />
-      <option name="PARAMETERS" value="" />
+      <option name="PARAMETERS" value="main.py patch.scm" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -94,38 +105,38 @@
       <screen x="0" y="0" width="1500" height="970" />
     </state>
     <state x="344" y="147" key="#Notifications/0.0.1500.970@0.0.1500.970" timestamp="1617285784594" />
-    <state x="207" y="141" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1617291793766">
+    <state x="207" y="141" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1617337729079">
       <screen x="0" y="0" width="1500" height="970" />
     </state>
-    <state x="207" y="141" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1500.970@0.0.1500.970" timestamp="1617291793766" />
-    <state x="495" y="291" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1617273539626">
+    <state x="207" y="141" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1500.970@0.0.1500.970" timestamp="1617337729079" />
+    <state x="495" y="291" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1617352836146">
       <screen x="0" y="0" width="1500" height="970" />
     </state>
-    <state x="495" y="291" key="#com.intellij.fileTypes.FileTypeChooser/0.0.1500.970@0.0.1500.970" timestamp="1617273539626" />
-    <state x="482" y="232" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1617207379484">
+    <state x="495" y="291" key="#com.intellij.fileTypes.FileTypeChooser/0.0.1500.970@0.0.1500.970" timestamp="1617352836146" />
+    <state x="482" y="232" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1617353732986">
       <screen x="0" y="0" width="1500" height="970" />
     </state>
-    <state x="482" y="232" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.0.1500.970@0.0.1500.970" timestamp="1617207379484" />
+    <state x="482" y="232" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.0.1500.970@0.0.1500.970" timestamp="1617353732986" />
     <state x="532" y="241" key="FileChooserDialogImpl" timestamp="1617291570873">
       <screen x="0" y="0" width="1500" height="970" />
     </state>
     <state x="532" y="241" key="FileChooserDialogImpl/0.0.1500.970@0.0.1500.970" timestamp="1617291570873" />
-    <state width="1466" height="255" key="GridCell.Tab.0.bottom" timestamp="1617337554101">
+    <state width="1466" height="255" key="GridCell.Tab.0.bottom" timestamp="1617355326381">
       <screen x="0" y="0" width="1500" height="970" />
     </state>
-    <state width="1466" height="255" key="GridCell.Tab.0.bottom/0.0.1500.970@0.0.1500.970" timestamp="1617337554101" />
-    <state width="1466" height="255" key="GridCell.Tab.0.center" timestamp="1617337554101">
+    <state width="1466" height="255" key="GridCell.Tab.0.bottom/0.0.1500.970@0.0.1500.970" timestamp="1617355326381" />
+    <state width="1466" height="255" key="GridCell.Tab.0.center" timestamp="1617355326381">
       <screen x="0" y="0" width="1500" height="970" />
     </state>
-    <state width="1466" height="255" key="GridCell.Tab.0.center/0.0.1500.970@0.0.1500.970" timestamp="1617337554101" />
-    <state width="1466" height="255" key="GridCell.Tab.0.left" timestamp="1617337554100">
+    <state width="1466" height="255" key="GridCell.Tab.0.center/0.0.1500.970@0.0.1500.970" timestamp="1617355326381" />
+    <state width="1466" height="255" key="GridCell.Tab.0.left" timestamp="1617355326380">
       <screen x="0" y="0" width="1500" height="970" />
     </state>
-    <state width="1466" height="255" key="GridCell.Tab.0.left/0.0.1500.970@0.0.1500.970" timestamp="1617337554100" />
-    <state width="1466" height="255" key="GridCell.Tab.0.right" timestamp="1617337554101">
+    <state width="1466" height="255" key="GridCell.Tab.0.left/0.0.1500.970@0.0.1500.970" timestamp="1617355326380" />
+    <state width="1466" height="255" key="GridCell.Tab.0.right" timestamp="1617355326381">
       <screen x="0" y="0" width="1500" height="970" />
     </state>
-    <state width="1466" height="255" key="GridCell.Tab.0.right/0.0.1500.970@0.0.1500.970" timestamp="1617337554101" />
+    <state width="1466" height="255" key="GridCell.Tab.0.right/0.0.1500.970@0.0.1500.970" timestamp="1617355326381" />
     <state width="1466" height="317" key="GridCell.Tab.1.bottom" timestamp="1617294747799">
       <screen x="0" y="0" width="1500" height="970" />
     </state>

@@ -1,8 +1,8 @@
-(in l "dress length" 72 60 120)
+(in l "dress length" 0.4 60 120)
 
-(in w "dress waist"  68 60 120)
+(in w "dress waist"  0.3 60 120)
 
-(in h "dress shape"  30 20 50)
+(in h "dress shape"  0.2 20 50)
 
 
 (define pi 3.1415926)
@@ -61,14 +61,16 @@
 )
 
 (define (skirtFront)
+    (define ox 0.1)
+    (define oy 0.1)
     (define theta1 0)
-    (define theta2 (/ pi 2))
-    (define r1 0.3)
-    (define r2 0.6)
-	(define waistLine (curveFitCircle 0.1 0.1 r1 theta1 theta2 0))
-	(define rightGeneratrix (lineByTheta 0.1 0.1 r1 r2 theta2 0))
-	(define bottomLine (curveFitCircle 0.1 0.1 r2 0 theta2 1))
-	(define leftGeneratrix (lineByTheta 0.1 0.1 r1 r2 theta1 1))
+    (define theta2 alpha)
+    (define r1 sl_)
+    (define r2 (+ sl_ l))
+	(define waistLine (curveFitCircle ox oy r1 theta1 theta2 0))
+	(define rightGeneratrix (lineByTheta ox oy r1 r2 theta2 0))
+	(define bottomLine (curveFitCircle ox oy r2 0 theta2 1))
+	(define leftGeneratrix (lineByTheta ox oy r1 r2 theta1 1))
 	(list waistLine rightGeneratrix bottomLine leftGeneratrix)
 )
 

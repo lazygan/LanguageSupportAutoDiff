@@ -18,28 +18,6 @@ def pairsToList(pc):
     return items
 
 
-
-class InputVal:
-    def __init__(self,pairchain):
-        items=pairsToList(pairchain)
-        self.valname=items[1]
-        self.info=items[2]
-        self.defaultVal=items[3]
-        self.minVal=items[3]
-        self.maxVal=items[3]
-        self.val=self.defaultVal
-
-    def toExpression(self):
-        return Pair("define",Pair(self.valname,Pair(self.val,nil)))
-
-
-class OutPutVal:
-    def __init__(self,pairchain):
-        items=pairsToList(pairchain)
-        self.valname=items[1]
-    def toExpression(self):
-        return self.valname
-
 class Point:
     def __init__(self,x,y):
         self.x=x
@@ -61,7 +39,7 @@ class AnchorPoint(Point):
 class Patch:
     def __init__(self,pairchain):
         itemes=pairsToList(pairchain)
-        print(itemes)
+        self.P=[]
 
         hn=itemes[0][1]
         head=AnchorPoint(hn[0], hn[1])
@@ -90,6 +68,7 @@ class Patch:
             head.preBcp= BeizerPoint(pn[2], pn[3])
 
         self.acpHead=lastPnt
+        self.repAsMat()
 
     def travel(self,fn):
         head=self.acpHead
@@ -98,6 +77,18 @@ class Patch:
         while p!=head:
             fn(p,p.nextAcp)
             p=p.nextAcp
+
+    def repAsMat(self):
+        head=self.acpHead
+        p=head.nextAcp
+        while p!=head:
+            if p.nextBcp!=None:
+                self.P.append([p.nextBcp.x,p.nextBcp.y])
+            if p.preBcp != None:
+                self.P.append([p.preBcp.x,p.preBcp.y])
+            self.P.append([p.x,p.y])
+            p=p.nextAcp
+
 
     def __repr__(self):
         def printAcp(p,_):
@@ -112,21 +103,3 @@ class Patch:
 
 
 
-def getInputAndOutPutValList(expressions):
-    inputVals=[]
-    outPutVals=[]
-    removedExprs=[]
-    for expr in expressions:
-        if isinstance(expr,str):
-            continue
-        if expr.first=="in":
-            removedExprs.append(expr)
-            inputVals.append(InputVal(expr))
-        if expr.first=="out":
-            removedExprs.append(expr)
-            outPutVals.append(OutPutVal(expr))
-
-    for expr in removedExprs:
-        expressions.remove(expr)
-
-    return inputVals,outPutVals
