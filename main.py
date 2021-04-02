@@ -4,7 +4,6 @@ from scheme_interpretor import *
 
 from Patch import *
 
-
 expressions=[]
 def parse_dsl(next_line):
     while True:
@@ -22,14 +21,8 @@ def eval_expressions(expressions, env,outPutVals):
      patches=[]
      for ov in outPutVals:
          patchPairChain=scheme_eval(ov.toExpression(),env)
-
          patches.append(Patch(patchPairChain))
      return patches
-
-
-
-
-
 
 from OpenGL.GL import *
 from OpenGL.GLU import *

@@ -61,6 +61,7 @@ class AnchorPoint(Point):
 class Patch:
     def __init__(self,pairchain):
         itemes=pairsToList(pairchain)
+        print(itemes)
 
         hn=itemes[0][1]
         head=AnchorPoint(hn[0], hn[1])

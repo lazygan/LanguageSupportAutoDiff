@@ -2,18 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="28e1536b-7fd9-4ef4-925f-6281782efec1" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Patch.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scheme_interpretor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/scheme_proj.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/scheme_proj.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Patch.py" beforeDir="false" afterPath="$PROJECT_DIR$/Patch.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/patch.scm" beforeDir="false" afterPath="$PROJECT_DIR$/patch.scm" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scheme.py" beforeDir="false" afterPath="$PROJECT_DIR$/scheme.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scheme_primitives.py" beforeDir="false" afterPath="$PROJECT_DIR$/scheme_primitives.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scheme_reader.py" beforeDir="false" afterPath="$PROJECT_DIR$/scheme_reader.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scheme_tokens.py" beforeDir="false" afterPath="$PROJECT_DIR$/scheme_tokens.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ucb.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -118,22 +110,22 @@
       <screen x="0" y="0" width="1500" height="970" />
     </state>
     <state x="532" y="241" key="FileChooserDialogImpl/0.0.1500.970@0.0.1500.970" timestamp="1617291570873" />
-    <state width="1466" height="255" key="GridCell.Tab.0.bottom" timestamp="1617331188492">
+    <state width="1466" height="255" key="GridCell.Tab.0.bottom" timestamp="1617337554101">
       <screen x="0" y="0" width="1500" height="970" />
     </state>
-    <state width="1466" height="255" key="GridCell.Tab.0.bottom/0.0.1500.970@0.0.1500.970" timestamp="1617331188492" />
-    <state width="1466" height="255" key="GridCell.Tab.0.center" timestamp="1617331188491">
+    <state width="1466" height="255" key="GridCell.Tab.0.bottom/0.0.1500.970@0.0.1500.970" timestamp="1617337554101" />
+    <state width="1466" height="255" key="GridCell.Tab.0.center" timestamp="1617337554101">
       <screen x="0" y="0" width="1500" height="970" />
     </state>
-    <state width="1466" height="255" key="GridCell.Tab.0.center/0.0.1500.970@0.0.1500.970" timestamp="1617331188491" />
-    <state width="1466" height="255" key="GridCell.Tab.0.left" timestamp="1617331188490">
+    <state width="1466" height="255" key="GridCell.Tab.0.center/0.0.1500.970@0.0.1500.970" timestamp="1617337554101" />
+    <state width="1466" height="255" key="GridCell.Tab.0.left" timestamp="1617337554100">
       <screen x="0" y="0" width="1500" height="970" />
     </state>
-    <state width="1466" height="255" key="GridCell.Tab.0.left/0.0.1500.970@0.0.1500.970" timestamp="1617331188490" />
-    <state width="1466" height="255" key="GridCell.Tab.0.right" timestamp="1617331188492">
+    <state width="1466" height="255" key="GridCell.Tab.0.left/0.0.1500.970@0.0.1500.970" timestamp="1617337554100" />
+    <state width="1466" height="255" key="GridCell.Tab.0.right" timestamp="1617337554101">
       <screen x="0" y="0" width="1500" height="970" />
     </state>
-    <state width="1466" height="255" key="GridCell.Tab.0.right/0.0.1500.970@0.0.1500.970" timestamp="1617331188492" />
+    <state width="1466" height="255" key="GridCell.Tab.0.right/0.0.1500.970@0.0.1500.970" timestamp="1617337554101" />
     <state width="1466" height="317" key="GridCell.Tab.1.bottom" timestamp="1617294747799">
       <screen x="0" y="0" width="1500" height="970" />
     </state>
@@ -158,5 +150,9 @@
       <screen x="0" y="0" width="1500" height="970" />
     </state>
     <state x="435" y="310" key="com.intellij.ide.util.TipDialog/0.0.1500.970@0.0.1500.970" timestamp="1617291774924" />
+    <state x="413" y="211" key="search.everywhere.popup" timestamp="1617333955572">
+      <screen x="0" y="0" width="1500" height="970" />
+    </state>
+    <state x="413" y="211" key="search.everywhere.popup/0.0.1500.970@0.0.1500.970" timestamp="1617333955572" />
   </component>
 </project>
