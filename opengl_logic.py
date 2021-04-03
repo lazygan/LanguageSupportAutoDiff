@@ -11,15 +11,9 @@ class OpenGLFunc:
     def __init__(self,expressions):
 
         inPutvals,outPutVals = getInputAndOutPutValList(expressions)
+        self.input=Input(inPutvals,expressions,outPutVals)
+        self.patches=self.input.eval()
 
-        for iv in inPutvals:
-            expressions.insert(0, iv.toExpression())
-
-        patches = eval_expressions(expressions, create_global_frame(), outPutVals)
-
-        self.expressions=expressions
-
-        self.patches=patches
     def unproject(self,x,y):
         modelview= glGetDoublev( GL_MODELVIEW_MATRIX);
         projection=glGetDoublev( GL_PROJECTION_MATRIX);
@@ -112,6 +106,7 @@ class OpenGLFunc:
 
     selectedAcp=None
     winZ=None
+    count=0
     def mouseClick(self, button, state, x, y):
         global selectedAcp
         global winZ
@@ -129,13 +124,10 @@ class OpenGLFunc:
             for patch in self.patches:
                 patch.travel(fn)
         elif state==1:
-            for patch in self.patches:
-                theta = optimization(patch.P)
-                print(theta)
+                self.patches=optimization(self.patches,self.input)
 
 
     def mousePressMove(self,x, y):
-
         if selectedAcp==None:
             return
         posx,posy,_=self.unprojectWinz(x,y,winZ)

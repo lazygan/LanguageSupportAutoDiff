@@ -36,11 +36,10 @@ class AnchorPoint(Point):
         self.nextBcp=nextBcp
         self.nextAcp=None
 
+import numpy as np
 class Patch:
     def __init__(self,pairchain):
         itemes=pairsToList(pairchain)
-        self.P=[]
-
         hn=itemes[0][1]
         head=AnchorPoint(hn[0], hn[1])
         lastPnt= head
@@ -68,7 +67,6 @@ class Patch:
             head.preBcp= BeizerPoint(pn[2], pn[3])
 
         self.acpHead=lastPnt
-        self.repAsMat()
 
     def travel(self,fn):
         head=self.acpHead
@@ -77,18 +75,6 @@ class Patch:
         while p!=head:
             fn(p,p.nextAcp)
             p=p.nextAcp
-
-    def repAsMat(self):
-        head=self.acpHead
-        p=head.nextAcp
-        while p!=head:
-            if p.nextBcp!=None:
-                self.P.append([p.nextBcp.x,p.nextBcp.y])
-            if p.preBcp != None:
-                self.P.append([p.preBcp.x,p.preBcp.y])
-            self.P.append([p.x,p.y])
-            p=p.nextAcp
-
 
     def __repr__(self):
         def printAcp(p,_):
