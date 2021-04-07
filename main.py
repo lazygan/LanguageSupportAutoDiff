@@ -1,8 +1,9 @@
 """A Scheme interpreter and its read-eval-print loop."""
 
+#from scheme_interpretor import *
 from scheme_reader import *
+from interpretor_autodiff import  *
 
-from opengl_logic import *
 
 def parse_dsl(next_line):
     expressions=[]
@@ -13,8 +14,6 @@ def parse_dsl(next_line):
                 expressions.append(scheme_read(src))
         except EOFError:  # <Control>-D, etc.
             return expressions
-
-
 
 
 if __name__ == '__main__':
@@ -30,15 +29,54 @@ if __name__ == '__main__':
         return buffer_lines(lines)
     raw_expressions = parse_dsl(next_line)
 
-    openglFunc=OpenGLFunc(raw_expressions)
+    env=create_global_frame()
+    for expr in raw_expressions:
+        print(calc(expr,env))
+        print(diff(expr,env))
+        print(expr)
 
-    glutInit()
-    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGBA)
-    glutInitWindowSize(600, 600)
-    glutCreateWindow(b"First")
-    glOrtho(0.0, 1.0, 0.0, 1.0, -1.0, 1.0)
-    glutDisplayFunc(openglFunc.drawFunc)
-    glutMouseFunc(openglFunc.mouseClick)
-    glutMotionFunc(openglFunc.mousePressMove)
-    glutMainLoop()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

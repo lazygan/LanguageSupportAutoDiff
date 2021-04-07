@@ -1,2 +1,1 @@
-(define (abs x) (if (< x 0) (- x) x))
-(abs 3)
+(- (+ (ln x1) (* x1 x2) ) (sin x2))

@@ -19,24 +19,13 @@ from buffer import Buffer, LineReader
 # Pairs and Scheme lists
 
 class Pair:
-    """A pair has two instance attributes: first and second.  For a Pair to be
-    a well-formed list, second is either a well-formed list or nil.  Some
-    methods only apply to well-formed lists.
-
-    >>> s = Pair(1, Pair(2, nil))
-    >>> s
-    Pair(1, Pair(2, nil))
-    >>> print(s)
-    (1 2)
-    >>> print(s.map(lambda x: x+4))
-    (5 6)
-    """
-    def __init__(self, first, second):
+    def __init__(self, first, second,val=None):
         self.first = first
         self.second = second
+        self.val=val
 
     def __repr__(self):
-        return 'Pair({0}, {1})'.format(repr(self.first), repr(self.second))
+        return 'Pair({0}, {1}, {2})'.format(repr(self.first), repr(self.second),self.val)
 
     def __len__(self):
         n, second = 1, self.second
@@ -78,28 +67,13 @@ nil = nil() # Assignment hides the nil class; there is only one instance
 
 
 def scheme_read(src):
-    """Read the next expression from SRC, a Buffer of tokens.
-
-    >>> scheme_read(Buffer(tokenize_lines(['nil'])))
-    nil
-    >>> scheme_read(Buffer(tokenize_lines(['1'])))
-    1
-    >>> scheme_read(Buffer(tokenize_lines(['true'])))
-    True
-    >>> scheme_read(Buffer(tokenize_lines(['(+ 1 2)'])))
-    Pair('+', Pair(1, Pair(2, nil)))
-    """
     if src.current() is None:
         raise EOFError
     val = src.remove_front() # Get the first token
     if val == 'nil':
-        # BEGIN PROBLEM 1
-        "*** YOUR CODE HERE ***"
         return nil
-        # END PROBLEM 1
     elif val == '(':
         # BEGIN PROBLEM 1
-        "*** YOUR CODE HERE ***"
         return read_tail(src)
         # END PROBLEM 1
     elif val not in DELIMITERS:

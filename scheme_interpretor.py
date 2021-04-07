@@ -1,24 +1,29 @@
-
-from scheme_primitives import *
 from scheme_reader import *
+from type_check import *
 
+"""This module implements the primitives of the Scheme language."""
+
+import math
+import operator
+from type_check import *
+
+PRIMITIVES = []
 
 def create_global_frame():
     """Initialize and return a single-frame environment with built-in names."""
     env = Frame(None)
-    add_primitives(env, PRIMITIVES)
+    add_primitives(env,PRIMITIVES)
     return env
 
 ##############
 # Eval/Apply #
 ##############
-
 def scheme_eval(expr, env, _=None):  # Optional third argument is ignored
+
     if scheme_symbolp(expr):
         return env.lookup(expr)
     elif self_evaluating(expr):
         return expr
-
     # All non-atomic expressions are lists (combinations)
     if not scheme_listp(expr):
         raise SchemeError('malformed list: {0}'.format(str(expr)))
@@ -29,6 +34,7 @@ def scheme_eval(expr, env, _=None):  # Optional third argument is ignored
         operator = scheme_eval(first, env)  # Get the operator
         check_procedure(operator)  # Check the operator
         return operator.eval_call(rest, env)
+
 
 
 def self_evaluating(expr):
@@ -55,6 +61,8 @@ def eval_all(expressions, env):
         scheme_eval(expressions.first, env)
         return eval_all(expressions.second, env)
     # END PROBLEM 8
+
+
 
 
 ################
@@ -133,12 +141,13 @@ class Procedure:
         # BEGIN PROBLEM 5
         "*** YOUR CODE HERE ***"
         eval_operands = lambda expr: scheme_eval(expr, env)
-        return scheme_apply(self, operands.map(eval_operands), env)  # Every operands should be evaluated
+
+        val=scheme_apply(self, operands.map(eval_operands), env)  # Every operands should be evaluated
+
+        return val
         # END PROBLEM 5
 
 
-def scheme_procedurep(x):
-    return isinstance(x, Procedure)
 
 
 class PrimitiveProcedure(Procedure):
@@ -153,30 +162,20 @@ class PrimitiveProcedure(Procedure):
         return '#[{0}]'.format(self.name)
 
     def apply(self, args, env):
-        """Apply SELF to ARGS in ENV, where ARGS is a Scheme list.
-
-        >>> env = create_global_frame()
-        >>> plus = env.bindings['+']
-        >>> twos = Pair(2, Pair(2, nil))
-        >>> plus.apply(twos, env)
-        4
-        """
         if not scheme_listp(args):
             raise SchemeError('arguments are not in a list: {0}'.format(args))
         # Convert a Scheme list to a Python list
+        begin=args
         python_args = []
         while args is not nil:
             python_args.append(args.first)
             args = args.second
-        # BEGIN PROBLEM 4
-        "*** YOUR CODE HERE ***"
         if self.use_env:
             python_args.append(env)
         try:
             return self.fn(*python_args)
         except TypeError:
             raise SchemeError("wrong number of parameters were passed")
-        # END PROBLEM 4
 
 
 class UserDefinedProcedure(Procedure):
@@ -343,10 +342,112 @@ def check_formals(formals):
         formals = formals.second
 
 
+def scheme_procedurep(x):
+    return isinstance(x, Procedure)
+
 def check_procedure(procedure):
     """Check that PROCEDURE is a valid Scheme procedure."""
     if not scheme_procedurep(procedure):
         raise SchemeError('{0} is not callable: {1}'.format(
             type(procedure).__name__.lower(), str(procedure)))
 
+
+def primitive(*names):
+    """An annotation to convert a Python function into a PrimitiveProcedure."""
+    def add(fn):
+        for name in names:
+            PRIMITIVES.append((name, fn, names[0]))
+        return fn
+    return add
+
+@primitive("list")
+def scheme_list(*vals):
+    result = nil
+    for e in reversed(vals):
+        result = Pair(e, result)
+    return result
+
+def _numcomp(op, x, y):
+    check_nums(x, y)
+    return op(x, y)
+
+@primitive("=")
+def scheme_eq(x, y):
+    return _numcomp(operator.eq, x, y)
+
+@primitive("<")
+def scheme_lt(x, y):
+    return _numcomp(operator.lt, x, y)
+
+@primitive(">")
+def scheme_gt(x, y):
+    return _numcomp(operator.gt, x, y)
+
+@primitive("<=")
+def scheme_le(x, y):
+    return _numcomp(operator.le, x, y)
+
+@primitive(">=")
+def scheme_ge(x, y):
+    return _numcomp(operator.ge, x, y)
+
+
+@primitive("+")
+def scheme_add(val0,val1):
+    check_nums(val0,val1)
+    return val0+val1
+
+@primitive("-")
+def scheme_sub(val0, *vals):
+    check_nums(val0, *vals) # fixes off-by-one error
+    if len(vals) == 0:
+        return -val0
+    return val0-vals[0]
+
+@primitive("*")
+def scheme_mul(val0,val1):
+    check_nums(val0,val1) # fixes off-by-one error
+    return val0*val1
+
+@primitive("/")
+def scheme_div(val0, val1):
+    check_nums(val0, val1) # fixes off-by-one error
+    try:
+        return val0/val1
+    except ZeroDivisionError as err:
+        raise SchemeError(err)
+
+@primitive("expt")
+def scheme_expt(val0, val1):
+    check_nums(val0, val1)
+    return pow(val0, val1)
+
+@primitive("ln")
+def scheme_ln(val):
+    check_nums(val)
+    return math.log(val,math.e)
+
+@primitive("abs")
+def scheme_abs(val0):
+    return abs(val0)
+
+@primitive("sin")
+def scheme_sin(val0):
+    return math.sin(val0)
+
+#def number_fn(module, name):
+#    """A Scheme primitive that calls the numeric Python function named
+#    MODULE.FN."""
+#    py_fn = getattr(module, name)
+#    def scheme_fn(*vals):
+#        check_nums(*vals)
+#        return py_fn(*vals)
+#    return scheme_fn
+
+# Add number functions in the math module as Scheme primitives
+#for _name in ["acos", "acosh", "asin", "asinh", "atan", "atan2", "atanh",
+#              "ceil", "copysign", "cos", "cosh", "degrees", "floor", "log",
+#              "log10", "log1p", "log2", "radians", "sin", "sinh", "sqrt",
+#              "tan", "tanh", "trunc"]:
+#    primitive(_name)(number_fn(math, _name))
 
