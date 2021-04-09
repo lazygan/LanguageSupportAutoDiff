@@ -19,7 +19,6 @@ def create_global_frame():
 # Eval/Apply #
 ##############
 def scheme_eval(expr, env, _=None):  # Optional third argument is ignored
-
     if scheme_symbolp(expr):
         return env.lookup(expr)
     elif self_evaluating(expr):
@@ -38,21 +37,15 @@ def scheme_eval(expr, env, _=None):  # Optional third argument is ignored
 
 
 def self_evaluating(expr):
-    """Return whether EXPR evaluates to itself."""
     return scheme_atomp(expr) or scheme_stringp(expr) or expr is None
 
 
 def scheme_apply(procedure, args, env):
-    """Apply Scheme PROCEDURE to argument values ARGS (a Scheme list) in
-    environment ENV."""
     check_procedure(procedure)
-    return procedure.apply(args, env)
+    return procedure.apply(args,env)
 
 
 def eval_all(expressions, env):
-    """Evaluate each expression im the Scheme list EXPRESSIONS in
-    environment ENV and return the value of the last."""
-    # BEGIN PROBLEM 8
     if expressions is nil:
         return None
     elif expressions.second is nil:  # Tail context
@@ -60,7 +53,6 @@ def eval_all(expressions, env):
     else:
         scheme_eval(expressions.first, env)
         return eval_all(expressions.second, env)
-    # END PROBLEM 8
 
 
 
@@ -70,10 +62,7 @@ def eval_all(expressions, env):
 ################
 
 class Frame:
-    """An environment frame binds Scheme symbols to Scheme values."""
-
     def __init__(self, parent):
-        """An empty frame with parent frame PARENT (which may be None)."""
         self.bindings = {}
         self.parent = parent
 
@@ -84,37 +73,17 @@ class Frame:
         return '<{{{0}}} -> {1}>'.format(', '.join(s), repr(self.parent))
 
     def define(self, symbol, value):
-        """Define Scheme SYMBOL to have VALUE."""
-        # BEGIN PROBLEM 3
-        "*** YOUR CODE HERE ***"
         self.bindings[symbol] = value
-        # END PROBLEM 3
 
     def lookup(self, symbol):
-        """Return the value bound to SYMBOL. Errors if SYMBOL is not found."""
-        # BEGIN PROBLEM 3
-        "*** YOUR CODE HERE ***"
         if symbol in self.bindings:
             return self.bindings[symbol]
         elif self.parent:
             return self.parent.lookup(symbol)
-        # END PROBLEM 3
         raise SchemeError('unknown identifier: {0}'.format(symbol))
 
     def make_child_frame(self, formals, vals):
-        """Return a new local frame whose parent is SELF, in which the symbols
-        in a Scheme list of formal parameters FORMALS are bound to the Scheme
-        values in the Scheme list VALS. Raise an error if too many or too few
-        vals are given.
-
-        >>> env = create_global_frame()
-        >>> formals, expressions = read_line('(a b c)'), read_line('(1 2 3)')
-        >>> env.make_child_frame(formals, expressions)
-        <{a: 1, b: 2, c: 3} -> <Global Frame>>
-        """
         child = Frame(self)  # Create a new child with self as the parent
-        # BEGIN PROBLEM 11
-        "*** YOUR CODE HERE ***"
         if len(vals) > len(formals):
             raise SchemeError("too many vals are given")
         elif len(vals) < len(formals):
@@ -123,7 +92,6 @@ class Frame:
             child.define(formals.first, vals.first)
             formals = formals.second
             vals = vals.second
-        # END PROBLEM 11
         return child
 
 
@@ -132,27 +100,15 @@ class Frame:
 ##############
 
 class Procedure:
-    """The supertype of all Scheme procedures."""
-
     def eval_call(self, operands, env):
-        """Standard function-call evaluation on SELF with OPERANDS as the
-        unevaluated actual-parameter expressions and ENV as the environment
-        in which the operands are to be evaluated."""
-        # BEGIN PROBLEM 5
-        "*** YOUR CODE HERE ***"
         eval_operands = lambda expr: scheme_eval(expr, env)
-
         val=scheme_apply(self, operands.map(eval_operands), env)  # Every operands should be evaluated
-
         return val
-        # END PROBLEM 5
 
 
 
 
 class PrimitiveProcedure(Procedure):
-    """A Scheme procedure defined as a Python function."""
-
     def __init__(self, fn, use_env=False, name='primitive'):
         self.name = name
         self.fn = fn
@@ -179,33 +135,19 @@ class PrimitiveProcedure(Procedure):
 
 
 class UserDefinedProcedure(Procedure):
-    """A procedure defined by an expression."""
-
     def apply(self, args, env):
-        """Apply SELF to argument values ARGS in environment ENV. Applying a
-        user-defined procedure evaluates all expressions in the body."""
         new_env = self.make_call_frame(args, env)
         return eval_all(self.body, new_env)
 
 
 class LambdaProcedure(UserDefinedProcedure):
-    """A procedure defined by a lambda expression or a define form."""
-
     def __init__(self, formals, body, env):
-        """A procedure with formal parameter list FORMALS (a Scheme list),
-        whose body is the Scheme list BODY, and whose parent environment
-        starts with Frame ENV."""
         self.formals = formals
         self.body = body
         self.env = env
 
     def make_call_frame(self, args, env):
-        """Make a frame that binds my formal parameters to ARGS, a Scheme list
-        of values, for a lexically-scoped call evaluated in environment ENV."""
-        # BEGIN PROBLEM 12
-        "*** YOUR CODE HERE ***"
         return self.env.make_child_frame(self.formals, args)
-        # END PROBLEM 12
 
     def __repr__(self):
         return 'LambdaProcedure({0}, {1}, {2})'.format(
@@ -213,9 +155,6 @@ class LambdaProcedure(UserDefinedProcedure):
 
 
 def add_primitives(frame, funcs_and_names):
-    """Enter bindings in FUNCS_AND_NAMES into FRAME, an environment frame,
-    as primitive procedures. Each item in FUNCS_AND_NAMES has the form
-    (NAME, PYTHON-FUNCTION, INTERNAL-NAME)."""
     for name, fn, proc_name in funcs_and_names:
         frame.define(name, PrimitiveProcedure(fn, name=proc_name))
 
@@ -230,7 +169,6 @@ def add_primitives(frame, funcs_and_names):
 # the environment in which the form is to be evaluated.
 
 def do_define_form(expressions, env):
-    """Evaluate a define form."""
     check_form(expressions, 2)
     target = expressions.first
     if scheme_symbolp(target):
@@ -306,12 +244,6 @@ SPECIAL_FORMS = {
 # Utility methods for checking the structure of Scheme programs
 
 def check_form(expr, min, max=float('inf')):
-    """Check EXPR is a proper list whose length is at least MIN and no more
-    than MAX (default: no maximum). Raises a SchemeError if this is not the
-    case.
-
-    >>> check_form(read_line('(a b)'), 2)
-    """
     if not scheme_listp(expr):
         raise SchemeError('badly formed expression: ' + str(expr))
     length = len(expr)

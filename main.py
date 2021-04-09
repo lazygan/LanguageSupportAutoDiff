@@ -1,19 +1,13 @@
 """A Scheme interpreter and its read-eval-print loop."""
 
-#from scheme_interpretor import *
-from scheme_reader import *
 from interpretor_autodiff import  *
 
 
-def parse_dsl(next_line):
+def parse_dsl(buffer):
     expressions=[]
-    while True:
-        try:
-            src = next_line()
-            while src.more_on_line:
-                expressions.append(scheme_read(src))
-        except EOFError:  # <Control>-D, etc.
-            return expressions
+    while buffer.more_on_line:
+                expressions.append(scheme_read( buffer))
+    return expressions
 
 
 if __name__ == '__main__':
@@ -25,15 +19,12 @@ if __name__ == '__main__':
     args = parser.parse_args()
     lines = args.file.readlines()
 
-    def next_line():
-        return buffer_lines(lines)
-    raw_expressions = parse_dsl(next_line)
+    raw_expressions = parse_dsl(buffer_lines(lines))
 
     env=create_global_frame()
     for expr in raw_expressions:
         print(calc(expr,env))
         print(diff(expr,env))
-        print(expr)
 
 
 
