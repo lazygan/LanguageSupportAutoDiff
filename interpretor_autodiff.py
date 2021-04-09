@@ -23,7 +23,7 @@ class Procedure:
         return self.apply(args)
 
     def diff(self,args,diff_args):
-        return self.apply(args,diff_args=diff_args)
+        return self.apply(args,diff_args)
 
 class PrimitiveProcedure(Procedure):
     def __init__(self, fn, use_env=False, name='primitive'):
@@ -35,29 +35,31 @@ class PrimitiveProcedure(Procedure):
         return self.fn(args,diff_args)
 
 
-#class UserDefinedProcedure(Procedure):
-#    def apply(self, args,env,diff_args=None):
-#        if diff_args
-#        self.trees[str(args)]=self.body
-#
-#
-#        new_env = self.make_call_frame(args, env)
-#        #return eval_all(self.body, new_env)
-#
-#
-#class LambdaProcedure(UserDefinedProcedure):
-#    def __init__(self, formals, body, env):
-#        self.formals = formals
-#        self.body = body
-#        self.env = env
-#        self.trees={}
-#
-#    def make_call_frame(self, args, env):
-#        return self.env.make_child_frame(self.formals, args)
-#
-#    def __repr__(self):
-#        return 'LambdaProcedure({0}, {1}, {2})'.format(
-#            repr(self.formals), repr(self.body), repr(self.env))
+class UserDefinedProcedure(Procedure):
+    def apply(self, args:Pair,diff_args=None):
+        if diff_args == None:
+            # 如果是calc过程
+            new_env = self.make_call_frame(args, self.env)
+            calc(self.body,new_env)
+            return self.body.val
+        else:
+            new_env = self.make_call_frame(args, self.env)
+            return diff(self.body,new_env)
+
+
+
+class LambdaProcedure(UserDefinedProcedure):
+    def __init__(self, formals, body, env):
+        self.formals = formals
+        self.body = body
+        self.env = env
+
+    def make_call_frame(self, args, env):
+        return self.env.make_child_frame(self.formals, args)
+
+    def __repr__(self):
+        return 'LambdaProcedure({0}, {1}, {2})'.format(
+            repr(self.formals), repr(self.body), repr(self.env))
 
 
 
@@ -83,23 +85,18 @@ def do_define_form(expressions, env):
          check_form(expressions, 2, 2)
          #存入表达式树
          value=expressions.second.first
-
          if isinstance(value,(int,float,bool)):
              env.define(target,value)
-
          elif isinstance(value,Pair):
              calc(value,env)
              env.define(target,value)
          return None
-     #elif isinstance(target, Pair) and scheme_symbolp(target.first):
-     #    # BEGIN PROBLEM 10
-     #    "*** YOUR CODE HERE ***"
-     #    formals = target.second
-     #    body = expressions.second
-     #    lambda_procedure = LambdaProcedure(formals, body, env)
-     #    env.define(target.first, lambda_procedure)
-     #    return target.first
-     #    # END PROBLEM 10
+     elif isinstance(target, Pair) and isinstance(target.first,str):
+         formals = target.second
+         body = expressions.second
+         lambda_procedure = LambdaProcedure(formals, body, env)
+         env.define(target.first, lambda_procedure)
+         return None
      else:
          bad_target = target.first if isinstance(target, Pair) else target
          raise SchemeError('non-symbol: {0}'.format(bad_target))
@@ -130,10 +127,12 @@ class Frame:
             raise SchemeError("too many vals are given")
         elif len(vals) < len(formals):
             raise SchemeError("too few vals are given")
+
+        count=0
         while formals is not nil:
-            child.define(formals.first, vals.first)
+            child.define(formals.first, vals[count])
             formals = formals.second
-            vals = vals.second
+            count += 1
         return child
 
 
