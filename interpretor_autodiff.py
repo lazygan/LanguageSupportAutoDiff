@@ -19,10 +19,10 @@ def create_global_frame():
 ##############
 
 class Procedure:
-    def eval_call(self, args):
+    def eval_call(self, args:Pair):
         return self.apply(args)
 
-    def diff(self,args,diff_args):
+    def diff(self,args:Pair,diff_args):
         return self.apply(args,diff_args)
 
 class PrimitiveProcedure(Procedure):
@@ -127,12 +127,15 @@ class Frame:
             raise SchemeError("too many vals are given")
         elif len(vals) < len(formals):
             raise SchemeError("too few vals are given")
-
-        count=0
         while formals is not nil:
-            child.define(formals.first, vals[count])
+            if isinstance(vals.first, (int,float,bool)):
+                child.define(formals.first, vals.first)
+            if isinstance(vals.first,str):
+                child.define(formals.first,vals)
+            if isinstance(vals.first,Pair):
+                child.define(formals.first, vals.first)
             formals = formals.second
-            count += 1
+            vals = vals.second
         return child
 
 
@@ -150,20 +153,21 @@ def calc(root:Pair,env:Frame):
         if  first in SPECIAL_FORMS:
             root.val=SPECIAL_FORMS[first](rest, env)
             return root.val
+        #lookup 只会返回值或者Pair
         symbol=env.lookup(first)
         if isinstance(symbol,(int,float,bool)):
             root.val=symbol
             return root.val
         if isinstance(symbol,Procedure):
             p=rest
-            args=[]
             while p!=nil:
-                args.append(calc(p,env))
+                calc(p,env)
                 p=p.second
-            root.val=symbol.eval_call(args)
+            root.val=symbol.eval_call(rest)
             return root.val
         if isinstance(symbol,Pair):
-            return symbol.val
+            root.val=calc(symbol,env)
+            return root.val
 
     elif isinstance(root.first,Pair):
         root.val= calc(root.first,env)
@@ -189,13 +193,12 @@ def diff(root:Pair,env):
             return 0
         if isinstance(symbol,Procedure):
             p=rest
-            args=[]
             diff_args=[]
             while p!=nil:
-                args.append(calc(p,env))
+                calc(p,env)
                 diff_args.append(diff(p,env))
                 p=p.second
-            return symbol.diff(args,diff_args)
+            return symbol.diff(rest,diff_args)
 
         if isinstance(symbol,Pair):
             return diff(symbol,env)
@@ -212,56 +215,57 @@ def primitive(*names):
     return add
 
 @primitive("+")
-def scheme_add(val,diff_val=None):
+def scheme_add(p,diff_val=None):
     if diff_val==None:
-        return val[0]+val[1]
+        check_nums(2,2)
+        return p.val+p.second.val
     else:
         return diff_val[0]+diff_val[1]
 
 @primitive("-")
-def scheme_sub(val,diff_val=None):
+def scheme_sub(p,diff_val=None):
     if diff_val==None:
-        if len(val) == 1:
-            return -val[0]
-        return val[0]-val[1]
+        if len(p) == 1:
+            return -p.val
+        return p.val-p.second.val
     else:
-        if len(val) == 1:
+        if len(p) == 1:
             return -diff_val[0]
         return diff_val[0]-diff_val[1]
 
 @primitive("*")
-def scheme_mul(val,diff_val=None):
+def scheme_mul(p,diff_val=None):
     if diff_val==None:
-        return val[0]*val[1]
+        return p.val*p.second.val
     else:
-        return val[0]*diff_val[1]+val[1]*diff_val[0]
+        return p.val*diff_val[1]+p.second.val*diff_val[0]
 
 @primitive("/")
-def scheme_div(val,diff_val=None):
+def scheme_div(p,diff_val=None):
     if diff_val==None:
         try:
-            return val[0]/val[1]
+            return p.val/p.second.val
         except ZeroDivisionError as err:
             raise SchemeError(err)
     else:
         try:
-            return (diff_val[0]*val[1]-diff_val[1]*val[0])/((val[1]*val[1]))
+            return (diff_val[0]*p.second.val-diff_val[1]*p.val)/((p.second.val*p.second.val))
         except ZeroDivisionError as err:
             raise SchemeError(err)
 
 @primitive("ln")
-def scheme_ln(val,diff_val=None):
+def scheme_ln(p,diff_val=None):
     if diff_val==None:
-        return math.log(val[0],math.e)
+        return math.log(p.val,math.e)
     else:
-        return diff_val[0]/val[0]
+        return diff_val[0]/p.val
 
 @primitive("sin")
-def scheme_sin(val,diff_val=None):
+def scheme_sin(p,diff_val=None):
     if diff_val==None:
-        return math.sin(val[0])
+        return math.sin(p.val)
     else:
-        return diff_val[0]*math.cos(val[0])
+        return diff_val[0]*math.cos(p.val)
 
 @primitive("list")
 def scheme_list(*vals):
