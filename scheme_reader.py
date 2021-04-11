@@ -30,6 +30,21 @@ class Pair:
             return Pair(mapped, self.second.map(fn))
         else:
             raise TypeError('ill-formed list')
+    def copy_pair(self):
+        res=Pair(None,None,self.val)
+        if isinstance(self.first,Pair):
+            res.first=self.first.copy_pair()
+        else:
+            res.first=self.first
+
+        if isinstance(self.second,Pair):
+            res.second=self.second.copy_pair()
+        else:
+            res.second=self.second
+        return res
+
+
+
 
 class nil:
     """The empty list"""

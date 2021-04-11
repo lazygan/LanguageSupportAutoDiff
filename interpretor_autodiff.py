@@ -25,41 +25,52 @@ class Procedure:
     def diff(self,args:Pair,diff_args):
         return self.apply(args,diff_args)
 
+    def rdiff(self,args:Pair,rdiff_args):
+        return self.apply(args,rdiff_args=rdiff_args)
+
+
 class PrimitiveProcedure(Procedure):
     def __init__(self, fn, use_env=False, name='primitive'):
         self.name = name
         self.fn = fn
         self.use_env = use_env
 
-    def apply(self, args,diff_args=None):
-        return self.fn(args,diff_args)
+    def apply(self, args,diff_args=None,rdiff_args=None):
+        return self.fn(args,diff_args,rdiff_args)
 
 
 class UserDefinedProcedure(Procedure):
     def apply(self, args:Pair,diff_args=None):
         if diff_args == None:
             # 如果是calc过程
-            new_env = self.make_call_frame(args, self.env)
-            calc(self.body,new_env)
-            return self.body.val
-        else:
-            new_env = self.make_call_frame(args, self.env)
-            return diff(self.body,new_env)
+            if self.evaled_body.get(str(args))==None:
+                self.evaled_body[str(args)]  = self.unevaled_body.copy_pair()
+                new_env = self.make_call_frame(args, self.env)
+                calc(self.evaled_body[str(args)],new_env)
+                return self.evaled_body[str(args)].val
+            else:
+                return self.evaled_body[str(args)].val
 
+        else:
+            if self.evaled_body.get(str(args))==None:
+                raise RuntimeError
+            new_env = self.make_call_frame(args, self.env)
+            return diff(self.evaled_body.get(str(args)),new_env)
 
 
 class LambdaProcedure(UserDefinedProcedure):
     def __init__(self, formals, body, env):
         self.formals = formals
-        self.body = body
+        self.unevaled_body = body
         self.env = env
+        self.evaled_body={}
 
     def make_call_frame(self, args, env):
         return self.env.make_child_frame(self.formals, args)
 
     def __repr__(self):
         return 'LambdaProcedure({0}, {1}, {2})'.format(
-            repr(self.formals), repr(self.body), repr(self.env))
+            repr(self.formals), repr(self.unevaled_body), repr(self.env))
 
 
 
@@ -185,10 +196,10 @@ def diff(root:Pair,env):
     if isinstance(first,str):
         if  first in SPECIAL_FORMS:
             return None
+        if first =="x2":
+            return 1
 
         symbol=env.lookup(first)
-        if first =="x1":
-            return 1
         if isinstance(symbol,(int,float,bool)):
             return 0
         if isinstance(symbol,Procedure):
@@ -206,6 +217,57 @@ def diff(root:Pair,env):
     elif isinstance(first,Pair):
         return diff(first,env)
 
+def reverse_diff(root:Pair,env:Frame,res:dict,pass_val):
+    first, rest =root.first,root.second
+    if isinstance(first,(int,float)):
+         return
+
+    if isinstance(first,str):
+        if  first in SPECIAL_FORMS:
+            return
+        if first =="x2" or first=="x1":
+            res[first]+=pass_val
+            return
+
+        symbol=env.lookup(first)
+
+        if isinstance(symbol,(int,float,bool)):
+            return
+
+        if isinstance(symbol,Procedure):
+            p=rest
+            rdiff_args=[]
+            rdiff_res=[]
+            while p!=nil:
+                rdiff_args.append(0)
+                p=p.second
+
+            count=0
+            p=rest
+            rdiff_args.append(pass_val)
+            while p!=nil:
+                rdiff_args[count]=1
+                rdiff_res.append(symbol.rdiff(rest,rdiff_args))
+                rdiff_args[count]=0
+                count+=1
+                p=p.second
+
+            p=rest
+            count=0
+            while p!=nil:
+                reverse_diff(p,env,res,rdiff_res[count])
+                count+=1
+                p=p.second
+            return
+
+        if isinstance(symbol,Pair):
+            reverse_diff(symbol,env,res,pass_val)
+            return
+
+    elif isinstance(first,Pair):
+        reverse_diff(first, env, res, pass_val)
+        return
+
 
 def primitive(*names):
     def add(fn):
@@ -215,65 +277,90 @@ def primitive(*names):
     return add
 
 @primitive("+")
-def scheme_add(p,diff_val=None):
-    if diff_val==None:
+def scheme_add(p,diff_val=None,rdiff_val=None):
+    if diff_val!=None:
+        return diff_val[0]+diff_val[1]
+    elif rdiff_val != None:
+        pass_val = rdiff_val[-1]
+        return pass_val*(rdiff_val[0]+rdiff_val[1])
+    else :
         check_nums(2,2)
         return p.val+p.second.val
-    else:
-        return diff_val[0]+diff_val[1]
 
 @primitive("-")
-def scheme_sub(p,diff_val=None):
-    if diff_val==None:
-        if len(p) == 1:
-            return -p.val
-        return p.val-p.second.val
-    else:
+def scheme_sub(p,diff_val=None,rdiff_val=None):
+    if diff_val!=None:
         if len(p) == 1:
             return -diff_val[0]
         return diff_val[0]-diff_val[1]
+    elif rdiff_val!=None:
+        pass_val=rdiff_val[-1]
+        if len(p) == 1:
+            return -pass_val
+        return pass_val*(rdiff_val[0]-rdiff_val[1])
+    else:
+        print(p)
+        if len(p) == 1:
+            return -p.val
+        return p.val-p.second.val
 
 @primitive("*")
-def scheme_mul(p,diff_val=None):
-    if diff_val==None:
+def scheme_mul(p,diff_val=None,rdiff_val=None):
+    if diff_val!=None:
+        return p.val * diff_val[1] + p.second.val * diff_val[0]
+    elif rdiff_val != None:
+        pass_val=rdiff_val[-1]
+        return pass_val*(rdiff_val[0]*p.second.val+rdiff_val[1]*p.val)
+    else:
         return p.val*p.second.val
-    else:
-        return p.val*diff_val[1]+p.second.val*diff_val[0]
 
-@primitive("/")
-def scheme_div(p,diff_val=None):
-    if diff_val==None:
-        try:
-            return p.val/p.second.val
-        except ZeroDivisionError as err:
-            raise SchemeError(err)
-    else:
-        try:
-            return (diff_val[0]*p.second.val-diff_val[1]*p.val)/((p.second.val*p.second.val))
-        except ZeroDivisionError as err:
-            raise SchemeError(err)
+#@primitive("/")
+#def scheme_div(p,diff_val=None):
+#    if diff_val==None:
+#        try:
+#            return p.val/p.second.val
+#        except ZeroDivisionError as err:
+#            raise SchemeError(err)
+#    else:
+#        try:
+#            return (diff_val[0]*p.second.val-diff_val[1]*p.val)/((p.second.val*p.second.val))
+#        except ZeroDivisionError as err:
+#            raise SchemeError(err)
 
 @primitive("ln")
-def scheme_ln(p,diff_val=None):
-    if diff_val==None:
-        return math.log(p.val,math.e)
-    else:
+def scheme_ln(p,diff_val=None,rdiff_val=None):
+    if diff_val!=None:
         return diff_val[0]/p.val
+    elif rdiff_val!=None:
+        pass_val=rdiff_val[-1]
+        return pass_val/p.val
+    else:
+        return math.log(p.val, math.e)
+
 
 @primitive("sin")
-def scheme_sin(p,diff_val=None):
-    if diff_val==None:
-        return math.sin(p.val)
-    else:
+def scheme_sin(p,diff_val=None,rdiff_val=None):
+    if diff_val!=None:
         return diff_val[0]*math.cos(p.val)
-
-@primitive("list")
-def scheme_list(*vals):
-    result = nil
-    if(vals[1]==None):
-        for e in reversed(vals[0]):
-            result = Pair(e, result)
+    elif rdiff_val!=None:
+        pass_val=rdiff_val[-1]
+        return pass_val*math.cos(p.val)
     else:
-        for e in reversed(vals[1]):
-            result = Pair(e, result)
-    return result
+        return math.sin(p.val)
+
+#@primitive("list")
+#def scheme_list(p,diff_val=None):
+#    result = nil
+#    if(diff_val==None):
+#        args=[]
+#        while p!=nil:
+#            args.append(p.val)
+#            p=p.second
+#        for e in reversed(args):
+#            result = Pair(e, result)
+#    else:
+#        for e in reversed(diff_val):
+#            result = Pair(e, result)
+#    return result
+
+
