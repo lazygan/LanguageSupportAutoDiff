@@ -10,6 +10,7 @@ PRIMITIVES = []
 def create_global_frame():
     """Initialize and return a single-frame environment with built-in names."""
     env = Frame(None)
+    env.isglobal=True
     add_primitives(env,PRIMITIVES)
     return env
 
@@ -45,11 +46,12 @@ class UserDefinedProcedure(Procedure):
             # 如果是calc过程
             if self.evaled_body.get(str(args))==None:
                 raise RuntimeError
-            new_env = self.make_child_frame(args)
+            new_env = self.get_child_frame(args)
             p = self.evaled_body[str(args)]
             while p.first.first in SPECIAL_FORMS:
                 p = p.second
-            return diff(p,new_env)
+            val=diff(p,new_env)
+            return val
 
         if rdiff_args != None and res!=None:
             if self.evaled_body.get(str(args))==None:
@@ -86,31 +88,45 @@ class LambdaProcedure(UserDefinedProcedure):
         self.unevaled_body = body
         self.env = env
         self.evaled_body={}
+        self.child={}
 
     def make_child_frame(self,args):
         formals=self.formals
         vals=args
-        child = Frame(self.env)  # Create a new child with self as the parent
+        self.child[str(args)] = Frame(self.env)  # Create a new child with self as the parent
         if len(args) > len(formals):
             raise SchemeError("too many vals are given")
         elif len(args) < len(formals):
             raise SchemeError("too few vals are given")
         while formals is not nil:
             if isinstance(vals.first, (int, float, bool)):
-                child.define(formals.first, vals.first)
+                self.child[str(args)].define(formals.first, vals.first)
             if isinstance(vals.first, str):
-                child.define(formals.first, vals)
+                p=vals
+                while True:
+                    try:
+                        if isinstance(p,Pair) and (p.first=="x1" or p.first=="x2") :
+                            break
+                        p=self.env.lookup(p.first)
+                    except:
+                        break
+                self.child[str(args)].define(formals.first,p)
             if isinstance(vals.first, Pair):
-                child.define(formals.first, vals.first)
+                self.child[str(args)].define(formals.first, vals.first)
             formals = formals.second
             vals = vals.second
-        return child
+        return self.child[str(args)]
+
+    def get_child_frame(self,args):
+        if self.child[str(args)] ==None:
+            raise RuntimeError
+        else:
+            return self.child[str(args)]
 
 
-
-    def __repr__(self):
-        return 'LambdaProcedure({0}, {1}, {2})'.format(
-            repr(self.formals), repr(self.unevaled_body), repr(self.env))
+    #def __repr__(self):
+    #    return 'LambdaProcedure({0}, {1}, {2})'.format(
+    #        repr(self.formals), repr(self.unevaled_body), repr(self.env))
 
 
 
@@ -158,9 +174,14 @@ SPECIAL_FORMS = {
 
 
 class Frame:
-    def __init__(self, parent):
+    def __init__(self, parent=None):
         self.bindings = {}
         self.parent = parent
+        self.level = None
+        if parent!=None:
+            self.level=parent.level+1
+        else:
+            self.level=0
 
     def define(self, symbol, value):
         self.bindings[symbol] = value
@@ -215,7 +236,6 @@ def calc(root:Pair,env:Frame):
 
 
 def diff(root:Pair,env):
-
     first, rest =root.first,root.second
 
     if isinstance(first,(int,float)):
@@ -226,7 +246,6 @@ def diff(root:Pair,env):
             return None
         if first =="x1":
             return 1
-
         symbol=env.lookup(first)
         if isinstance(symbol,(int,float,bool)):
             return 0
@@ -240,6 +259,8 @@ def diff(root:Pair,env):
             return symbol.diff(rest,diff_args)
 
         if isinstance(symbol,Pair):
+            if symbol.second==nil:
+                return 0
             return diff(symbol,env)
 
     elif isinstance(first,Pair):

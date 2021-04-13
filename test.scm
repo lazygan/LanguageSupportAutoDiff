@@ -1,19 +1,28 @@
-(define (main)
-    (define x1 2)
-    (define x2 5)
+(define x1 2)
+(define x2 5)
+
+(define (main x y)
     (define (r1 x y)
-        (define (r x )
-            (define (r3 x) (+ x2 x) )
-            (* x1 (r3 x) )
+        (define (r a)
+            (define (r3 a) (+ x2 a) )
+            (* x1 (r3 a) )
         )
-        (define (r2 x) (* (r 4) x))
-        (* (r x) (* (r x) (r2 y)))
+        (define (r2 b) (* (r 4) b))
+
+        (* (r x) (* (r2 y) (r x)))
     )
     (r1 x1 x2)
 )
+
+(define (r a) (* x1 (+ x2 a) ))
+(define (r2 b) (* (r 4) b))
+(* (r x1) (* (r2 x2) (r x1)))
+
+
 ;(r1 3 x1)
 ;(- (+ (ln x1) (* x1 x2) ) (sin x2))
 
-(main)
+(main x1 x2)
+
 
 
