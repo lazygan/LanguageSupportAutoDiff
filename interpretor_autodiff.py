@@ -45,8 +45,7 @@ class UserDefinedProcedure(Procedure):
             # 如果是calc过程
             if self.evaled_body.get(str(args))==None:
                 raise RuntimeError
-            new_env = self.get_child_frame()
-            #new_env = self.make_child_frame(args)
+            new_env = self.make_child_frame(args)
             p = self.evaled_body[str(args)]
             while p.first.first in SPECIAL_FORMS:
                 p = p.second
@@ -55,8 +54,7 @@ class UserDefinedProcedure(Procedure):
         if rdiff_args != None and res!=None:
             if self.evaled_body.get(str(args))==None:
                 raise RuntimeError
-            new_env = self.get_child_frame()
-            #new_env = self.make_child_frame(args)
+            new_env = self.make_child_frame(args)
             p = self.evaled_body[str(args)]
             while p.first.first in SPECIAL_FORMS:
                 p = p.second
@@ -69,16 +67,18 @@ class UserDefinedProcedure(Procedure):
                 p=self.evaled_body[str(args)]
                 while True:
                      q=p.first
-                     if  q.first in SPECIAL_FORMS:
+                     if isinstance(q,Pair) and q.first in SPECIAL_FORMS:
                          SPECIAL_FORMS[q.first](q.second, new_env)
                      else:
                          break
                      p=p.second
                 calc(p,new_env)
                 return p.val
-
             else:
-                return self.evaled_body[str(args)].val
+                p = self.evaled_body[str(args)]
+                while p.first.first in SPECIAL_FORMS:
+                    p = p.second
+                return p.val
 
 class LambdaProcedure(UserDefinedProcedure):
     def __init__(self, formals, body, env):
@@ -86,31 +86,26 @@ class LambdaProcedure(UserDefinedProcedure):
         self.unevaled_body = body
         self.env = env
         self.evaled_body={}
-        self.child={}
 
     def make_child_frame(self,args):
         formals=self.formals
         vals=args
-        self.child[str(self.env.bindings)] = Frame(self.env)  # Create a new child with self as the parent
+        child = Frame(self.env)  # Create a new child with self as the parent
         if len(args) > len(formals):
             raise SchemeError("too many vals are given")
         elif len(args) < len(formals):
             raise SchemeError("too few vals are given")
         while formals is not nil:
             if isinstance(vals.first, (int, float, bool)):
-                self.child[str(self.env.bindings)].define(formals.first, vals.first)
+                child.define(formals.first, vals.first)
             if isinstance(vals.first, str):
-                self.child[str(self.env.bindings)].define(formals.first, vals)
+                child.define(formals.first, vals)
             if isinstance(vals.first, Pair):
-                self.child[str(self.env.bindings)].define(formals.first, vals.first)
+                child.define(formals.first, vals.first)
             formals = formals.second
             vals = vals.second
-        return self.child[str(self.env.bindings)]
+        return child
 
-    def get_child_frame(self):
-        if self.child[str(self.env.bindings)]==None:
-            raise RuntimeError
-        return self.child[str(self.env.bindings)]
 
 
     def __repr__(self):
@@ -196,6 +191,7 @@ def calc(root:Pair,env:Frame):
             return root.val
         #lookup 只会返回值或者Pair
         symbol=env.lookup(first)
+
         if isinstance(symbol,(int,float,bool)):
             root.val=symbol
             return root.val
@@ -206,6 +202,7 @@ def calc(root:Pair,env:Frame):
                 p=p.second
             root.val=symbol.eval_call(rest)
             return root.val
+
         if isinstance(symbol,Pair):
             root.val=calc(symbol,env)
             return root.val
@@ -227,11 +224,9 @@ def diff(root:Pair,env):
     if isinstance(first,str):
         if  first in SPECIAL_FORMS:
             return None
-        if first =="x2":
+        if first =="x1":
             return 1
 
-        print(first,"=>",rest)
-        print(env.bindings)
         symbol=env.lookup(first)
         if isinstance(symbol,(int,float,bool)):
             return 0
