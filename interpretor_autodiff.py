@@ -25,8 +25,8 @@ class Procedure:
     def diff(self,args:Pair,diff_args):
         return self.apply(args,diff_args)
 
-    def rdiff(self,args:Pair,rdiff_args):
-        return self.apply(args,rdiff_args=rdiff_args)
+    def rdiff(self,args:Pair,rdiff_args,res):
+        return self.apply(args,rdiff_args=rdiff_args,res=res)
 
 
 class PrimitiveProcedure(Procedure):
@@ -35,28 +35,50 @@ class PrimitiveProcedure(Procedure):
         self.fn = fn
         self.use_env = use_env
 
-    def apply(self, args,diff_args=None,rdiff_args=None):
+    def apply(self, args,diff_args=None,rdiff_args=None,res=None):
         return self.fn(args,diff_args,rdiff_args)
 
 
 class UserDefinedProcedure(Procedure):
-    def apply(self, args:Pair,diff_args=None):
-        if diff_args == None:
+    def apply(self, args:Pair,diff_args=None,rdiff_args=None,res=None):
+        if diff_args != None:
             # 如果是calc过程
             if self.evaled_body.get(str(args))==None:
-                self.evaled_body[str(args)]  = self.unevaled_body.copy_pair()
-                new_env = self.make_call_frame(args, self.env)
-                calc(self.evaled_body[str(args)],new_env)
-                return self.evaled_body[str(args)].val
-            else:
-                return self.evaled_body[str(args)].val
+                raise RuntimeError
+            new_env = self.get_child_frame()
+            #new_env = self.make_child_frame(args)
+            p = self.evaled_body[str(args)]
+            while p.first.first in SPECIAL_FORMS:
+                p = p.second
+            return diff(p,new_env)
+
+        if rdiff_args != None and res!=None:
+            if self.evaled_body.get(str(args))==None:
+                raise RuntimeError
+            new_env = self.get_child_frame()
+            #new_env = self.make_child_frame(args)
+            p = self.evaled_body[str(args)]
+            while p.first.first in SPECIAL_FORMS:
+                p = p.second
+            reverse_diff(p,new_env,res,rdiff_args[-1])
 
         else:
             if self.evaled_body.get(str(args))==None:
-                raise RuntimeError
-            new_env = self.make_call_frame(args, self.env)
-            return diff(self.evaled_body.get(str(args)),new_env)
+                self.evaled_body[str(args)]  = self.unevaled_body.copy_pair()
+                new_env = self.make_child_frame(args)
+                p=self.evaled_body[str(args)]
+                while True:
+                     q=p.first
+                     if  q.first in SPECIAL_FORMS:
+                         SPECIAL_FORMS[q.first](q.second, new_env)
+                     else:
+                         break
+                     p=p.second
+                calc(p,new_env)
+                return p.val
 
+            else:
+                return self.evaled_body[str(args)].val
 
 class LambdaProcedure(UserDefinedProcedure):
     def __init__(self, formals, body, env):
@@ -64,9 +86,32 @@ class LambdaProcedure(UserDefinedProcedure):
         self.unevaled_body = body
         self.env = env
         self.evaled_body={}
+        self.child={}
 
-    def make_call_frame(self, args, env):
-        return self.env.make_child_frame(self.formals, args)
+    def make_child_frame(self,args):
+        formals=self.formals
+        vals=args
+        self.child[str(self.env.bindings)] = Frame(self.env)  # Create a new child with self as the parent
+        if len(args) > len(formals):
+            raise SchemeError("too many vals are given")
+        elif len(args) < len(formals):
+            raise SchemeError("too few vals are given")
+        while formals is not nil:
+            if isinstance(vals.first, (int, float, bool)):
+                self.child[str(self.env.bindings)].define(formals.first, vals.first)
+            if isinstance(vals.first, str):
+                self.child[str(self.env.bindings)].define(formals.first, vals)
+            if isinstance(vals.first, Pair):
+                self.child[str(self.env.bindings)].define(formals.first, vals.first)
+            formals = formals.second
+            vals = vals.second
+        return self.child[str(self.env.bindings)]
+
+    def get_child_frame(self):
+        if self.child[str(self.env.bindings)]==None:
+            raise RuntimeError
+        return self.child[str(self.env.bindings)]
+
 
     def __repr__(self):
         return 'LambdaProcedure({0}, {1}, {2})'.format(
@@ -132,26 +177,11 @@ class Frame:
             return self.parent.lookup(symbol)
         raise SchemeError('unknown identifier: {0}'.format(symbol))
 
-    def make_child_frame(self, formals, vals):
-        child = Frame(self)  # Create a new child with self as the parent
-        if len(vals) > len(formals):
-            raise SchemeError("too many vals are given")
-        elif len(vals) < len(formals):
-            raise SchemeError("too few vals are given")
-        while formals is not nil:
-            if isinstance(vals.first, (int,float,bool)):
-                child.define(formals.first, vals.first)
-            if isinstance(vals.first,str):
-                child.define(formals.first,vals)
-            if isinstance(vals.first,Pair):
-                child.define(formals.first, vals.first)
-            formals = formals.second
-            vals = vals.second
-        return child
 
 
 
 def calc(root:Pair,env:Frame):
+
     if root.val!=None:
         return root.val
     first, rest =root.first,root.second
@@ -188,6 +218,7 @@ def calc(root:Pair,env:Frame):
 
 
 def diff(root:Pair,env):
+
     first, rest =root.first,root.second
 
     if isinstance(first,(int,float)):
@@ -199,6 +230,8 @@ def diff(root:Pair,env):
         if first =="x2":
             return 1
 
+        print(first,"=>",rest)
+        print(env.bindings)
         symbol=env.lookup(first)
         if isinstance(symbol,(int,float,bool)):
             return 0
@@ -228,6 +261,13 @@ def reverse_diff(root:Pair,env:Frame,res:dict,pass_val):
         if first =="x2" or first=="x1":
             res[first]+=pass_val
             return
+        if first=="list":
+            p=rest
+            while p!=nil:
+                reverse_diff(p.first,env,res,pass_val)
+                p=p.second
+            return
+
 
         symbol=env.lookup(first)
 
@@ -245,13 +285,16 @@ def reverse_diff(root:Pair,env:Frame,res:dict,pass_val):
             count=0
             p=rest
             rdiff_args.append(pass_val)
+            if isinstance(symbol,UserDefinedProcedure):
+                symbol.rdiff(rest,rdiff_args,res)
+                return
+
             while p!=nil:
                 rdiff_args[count]=1
-                rdiff_res.append(symbol.rdiff(rest,rdiff_args))
+                rdiff_res.append(symbol.rdiff(rest,rdiff_args,res))
                 rdiff_args[count]=0
                 count+=1
                 p=p.second
-
             p=rest
             count=0
             while p!=nil:
@@ -299,7 +342,6 @@ def scheme_sub(p,diff_val=None,rdiff_val=None):
             return -pass_val
         return pass_val*(rdiff_val[0]-rdiff_val[1])
     else:
-        print(p)
         if len(p) == 1:
             return -p.val
         return p.val-p.second.val
@@ -348,19 +390,21 @@ def scheme_sin(p,diff_val=None,rdiff_val=None):
     else:
         return math.sin(p.val)
 
-#@primitive("list")
-#def scheme_list(p,diff_val=None):
-#    result = nil
-#    if(diff_val==None):
-#        args=[]
-#        while p!=nil:
-#            args.append(p.val)
-#            p=p.second
-#        for e in reversed(args):
-#            result = Pair(e, result)
-#    else:
-#        for e in reversed(diff_val):
-#            result = Pair(e, result)
-#    return result
+@primitive("list")
+def scheme_list(p,diff_val=None,rdiff_val=None):
+    result = nil
+    if diff_val!=None:
+        for e in reversed(diff_val):
+            result = Pair(e, result)
+    elif rdiff_val!=None:
+        return
+    else:
+        args=[]
+        while p!=nil:
+            args.append(p.val)
+            p=p.second
+        for e in reversed(args):
+            result = Pair(e, result)
+    return result
 
 

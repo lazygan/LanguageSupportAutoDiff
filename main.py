@@ -29,7 +29,7 @@ if __name__ == '__main__':
         res={"x1":0,"x2":0}
         print(reverse_diff(expr,env,res,1))
         print(res)
-        print("========")
+        #print("========")
 
 
 
