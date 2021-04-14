@@ -1,5 +1,4 @@
 from scheme_reader import *
-from type_check import *
 import math
 ################
 # Environments #
@@ -95,9 +94,9 @@ class LambdaProcedure(UserDefinedProcedure):
         vals=args
         self.child[str(args)] = Frame(self.env)  # Create a new child with self as the parent
         if len(args) > len(formals):
-            raise SchemeError("too many vals are given")
+            raise RuntimeError("too many vals are given")
         elif len(args) < len(formals):
-            raise SchemeError("too few vals are given")
+            raise RuntimeError("too few vals are given")
         while formals is not nil:
             if isinstance(vals.first, (int, float, bool)):
                 self.child[str(args)].define(formals.first, vals.first)
@@ -128,21 +127,29 @@ def add_primitives(frame, funcs_and_names):
     for name, fn, proc_name in funcs_and_names:
         frame.define(name, PrimitiveProcedure(fn, name=proc_name))
 
+def scheme_listp(x):
+    """Return whether x is a well-formed list. Assumes no cycles."""
+    while x is not nil:
+        if not isinstance(x, Pair):
+            return False
+        x = x.second
+    return True
+
 def check_form(expr, min, max=float('inf')):
     if not scheme_listp(expr):
-        raise SchemeError('badly formed expression: ' + str(expr))
+        raise RuntimeError('badly formed expression: ' + str(expr))
     length = len(expr)
     if length < min:
-        raise SchemeError('too few operands in form')
+        raise RuntimeError('too few operands in form')
     elif length > max:
-        raise SchemeError('too many operands in form')
+        raise RuntimeError('too many operands in form')
 
 
 def do_define_form(expressions, env):
      check_form(expressions, 2)
      target = expressions.first
      #如果式定义符号
-     if scheme_symbolp(target):
+     if isinstance(target, str) :
          check_form(expressions, 2, 2)
          #存入表达式树
          value=expressions.second.first
@@ -160,7 +167,7 @@ def do_define_form(expressions, env):
          return None
      else:
          bad_target = target.first if isinstance(target, Pair) else target
-         raise SchemeError('non-symbol: {0}'.format(bad_target))
+         raise RuntimeError('non-symbol: {0}'.format(bad_target))
 
 SPECIAL_FORMS = {
     'define': do_define_form,
@@ -185,7 +192,7 @@ class Frame:
             return self.bindings[symbol]
         elif self.parent:
             return self.parent.lookup(symbol)
-        raise SchemeError('unknown identifier: {0}'.format(symbol))
+        raise RuntimeError('unknown identifier: {0}'.format(symbol))
 
 
 
@@ -238,7 +245,7 @@ def diff(root:Pair,env):
     if isinstance(first,str):
         if  first in SPECIAL_FORMS:
             return None
-        if first =="x1":
+        if first =="x2":
             return 1
         symbol=env.lookup(first)
 
@@ -254,7 +261,7 @@ def diff(root:Pair,env):
             return symbol.diff(rest,diff_args)
 
         if isinstance(symbol,Pair):
-            if symbol.first == "x1":
+            if symbol.first == "x2":
                 return 1
             if symbol.second==nil:
                 return 0
@@ -341,7 +348,6 @@ def scheme_add(p,diff_val=None,rdiff_val=None):
         pass_val = rdiff_val[-1]
         return pass_val*(rdiff_val[0]+rdiff_val[1])
     else :
-        check_nums(2,2)
         return p.val+p.second.val
 
 @primitive("-")
@@ -376,12 +382,12 @@ def scheme_mul(p,diff_val=None,rdiff_val=None):
 #        try:
 #            return p.val/p.second.val
 #        except ZeroDivisionError as err:
-#            raise SchemeError(err)
+#            raise RuntimeError(err)
 #    else:
 #        try:
 #            return (diff_val[0]*p.second.val-diff_val[1]*p.val)/((p.second.val*p.second.val))
 #        except ZeroDivisionError as err:
-#            raise SchemeError(err)
+#            raise RuntimeError(err)
 
 @primitive("ln")
 def scheme_ln(p,diff_val=None,rdiff_val=None):
