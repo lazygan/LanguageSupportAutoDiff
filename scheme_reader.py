@@ -108,9 +108,4 @@ def read_tail(src):
         raise SyntaxError('unexpected end of file')
 
 
-def buffer_lines(lines):
-    for i in range(len(lines)):
-        lines[i]=lines[i].strip('\n')
-        lines[i]=tokenize_line(lines[i])
-    return Buffer(lines)
 
