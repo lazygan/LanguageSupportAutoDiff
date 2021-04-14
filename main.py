@@ -27,9 +27,9 @@ if __name__ == '__main__':
         print(calc(expr,env))
         print(diff(expr,env))
 
-        #res={"x1":0,"x2":0}
-        #print(reverse_diff(expr,env,res,1))
-        #print(res)
+        res={"x1":0,"x2":0}
+        print(reverse_diff(expr,env,res,1))
+        print(res)
         #print("========")
 
 

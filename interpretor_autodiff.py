@@ -56,7 +56,7 @@ class UserDefinedProcedure(Procedure):
         if rdiff_args != None and res!=None:
             if self.evaled_body.get(str(args))==None:
                 raise RuntimeError
-            new_env = self.make_child_frame(args)
+            new_env = self.get_child_frame(args)
             p = self.evaled_body[str(args)]
             while p.first.first in SPECIAL_FORMS:
                 p = p.second
@@ -122,12 +122,6 @@ class LambdaProcedure(UserDefinedProcedure):
             raise RuntimeError
         else:
             return self.child[str(args)]
-
-
-    #def __repr__(self):
-    #    return 'LambdaProcedure({0}, {1}, {2})'.format(
-    #        repr(self.formals), repr(self.unevaled_body), repr(self.env))
-
 
 
 def add_primitives(frame, funcs_and_names):
@@ -247,6 +241,7 @@ def diff(root:Pair,env):
         if first =="x1":
             return 1
         symbol=env.lookup(first)
+
         if isinstance(symbol,(int,float,bool)):
             return 0
         if isinstance(symbol,Procedure):
@@ -259,8 +254,11 @@ def diff(root:Pair,env):
             return symbol.diff(rest,diff_args)
 
         if isinstance(symbol,Pair):
+            if symbol.first == "x1":
+                return 1
             if symbol.second==nil:
                 return 0
+
             return diff(symbol,env)
 
     elif isinstance(first,Pair):
