@@ -1,5 +1,7 @@
 """A Scheme interpreter and its read-eval-print loop."""
 
+
+from scheme_parser import Buffer,scheme_read,tokenize_line
 from interpretor_autodiff import  *
 
 
@@ -9,9 +11,32 @@ def parse_dsl(buffer:Buffer):
                 expressions.append(scheme_read( buffer))
     return expressions
 
+def pairsToList(pc):
+    items = []
+    if not isinstance(pc,Pair):
+        return pc
+    else:
+        p=pc
+        while p!=nil:
+            items.append(pairsToList(p.first))
+            p=p.second
+    return items
+
+def to_raw_expression(pc):
+    items = []
+    if not isinstance(pc,Pair):
+        return pc
+    else:
+        p=pc
+        while p!=nil:
+            items.append(p.first)
+            p=p.second
+    return items
+
+
 
 import argparse
-from sugar_parser import Lexer,AbrvalgSyntaxError,report_syntax_error,TokenStream,Parser
+from gan_parser import Lexer,AbrvalgSyntaxError,report_syntax_error,TokenStream,Parser
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Garment DSL Demo')
@@ -20,13 +45,14 @@ if __name__ == '__main__':
                         type=argparse.FileType('r'), default=None,
                         help='Scheme file to run')
     args = parser.parse_args()
-    buffer=None
+    raw_expressions=None
     if args.file.name.endswith(".scm") :
         lines = args.file.readlines()
         for i in range(len(lines)):
             lines[i]=lines[i].strip('\n')
             lines[i]=tokenize_line(lines[i])
         buffer=Buffer(lines)
+        raw_expressions = parse_dsl(buffer)
     elif args.file.name.endswith(".gan"):
         lines = args.file.read()
         lexer = Lexer()
@@ -41,10 +67,12 @@ if __name__ == '__main__':
         except AbrvalgSyntaxError as err:
             report_syntax_error(lexer, err)
 
-    if buffer==None:
-        exit()
+        raw_expressions=to_raw_expression(program)
 
-    raw_expressions = parse_dsl(buffer)
+    if raw_expressions==None:
+        raise RuntimeError("Not supported file type")
+
+
 
     env=create_global_frame()
     for expr in raw_expressions:

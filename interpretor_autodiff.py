@@ -1,4 +1,4 @@
-from scheme_reader import *
+from IR import Pair,nil
 import math
 ################
 # Environments #

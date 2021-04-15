@@ -1,5 +1,3 @@
-from scheme_tokens import DELIMITERS,tokenize_line
-
 class Pair:
     def __init__(self, first, second,val=None):
         self.first = first
@@ -57,55 +55,4 @@ class nil:
 
     def map(self, fn):
         return self
-
-class Buffer:
-    def __init__(self, source):
-        self.index = 0
-        self.source=[]
-        for line in source:
-            self.source += line
-
-    def remove_front(self):
-        current = self.current()
-        self.index += 1
-        return current
-
-    def current(self):
-        return self.source[self.index]
-
-    @property
-    def more_on_line(self):
-        return self.index < len(self.source)
-
 nil = nil() # Assignment hides the nil class; there is only one instance
-
-def scheme_read(src):
-    if src.current() is None:
-        raise EOFError
-    val = src.remove_front() # Get the first token
-    if val == 'nil':
-        return nil
-    elif val == '(':
-        return read_tail(src)
-    elif val not in DELIMITERS:
-        return val
-    else:
-        raise SyntaxError('unexpected token: {0}'.format(val))
-
-def read_tail(src):
-    try:
-        if src.current() is None:
-            raise SyntaxError('unexpected end of file')
-        elif src.current() == ')':
-            src.remove_front()  # Remove the closing parenthesis
-            return nil
-        else:
-            first = scheme_read(src)
-            rest = read_tail(src)
-            return Pair(first, rest)
-            # END PROBLEM 1
-    except EOFError:
-        raise SyntaxError('unexpected end of file')
-
-
-

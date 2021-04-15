@@ -1,5 +1,6 @@
 import string
 import sys
+from IR import Pair,nil
 
 _NUMERAL_STARTS = set(string.digits) | set('+-.')
 _SYMBOL_CHARS = (set('!$%&*/:<=>?@^_~') | set(string.ascii_lowercase) |
@@ -75,5 +76,55 @@ def tokenize_line(line):
             print(" " * (i+3), "^", file=sys.stderr)
         text, i = next_candidate_token(line, i)
     return result
+
+class Buffer:
+    def __init__(self, source):
+        self.index = 0
+        self.source=[]
+        for line in source:
+            self.source += line
+
+    def remove_front(self):
+        current = self.current()
+        self.index += 1
+        return current
+
+    def current(self):
+        return self.source[self.index]
+
+    @property
+    def more_on_line(self):
+        return self.index < len(self.source)
+
+
+def scheme_read(src):
+    if src.current() is None:
+        raise EOFError
+    val = src.remove_front() # Get the first token
+    if val == 'nil':
+        return nil
+    elif val == '(':
+        return read_tail(src)
+    elif val not in DELIMITERS:
+        return val
+    else:
+        raise SyntaxError('unexpected token: {0}'.format(val))
+
+def read_tail(src):
+    try:
+        if src.current() is None:
+            raise SyntaxError('unexpected end of file')
+        elif src.current() == ')':
+            src.remove_front()  # Remove the closing parenthesis
+            return nil
+        else:
+            first = scheme_read(src)
+            rest = read_tail(src)
+            return Pair(first, rest)
+            # END PROBLEM 1
+    except EOFError:
+        raise SyntaxError('unexpected end of file')
+
+
 
 

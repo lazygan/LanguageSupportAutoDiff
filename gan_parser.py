@@ -8,6 +8,7 @@
 #class Translator:
 #    pass
 
+from IR import Pair,nil
 import re
 from collections import namedtuple, OrderedDict
 
@@ -166,7 +167,8 @@ class Lexer(object):
             if indent_symbol is None:
                 indent_symbol = self._detect_indent(line)
 
-            if indent_symbol is not None:
+            #这个地方需要排除注释,写法上注意下
+            if indent_symbol is not None and line[0]!="#":
                 indent_level = line.count(indent_symbol)
                 line = line[indent_level*len(indent_symbol):]
             else:
@@ -213,6 +215,7 @@ class TokenStream(object):
 
     def current(self):
         try:
+            #print(self._tokens[self._pos])
             return self._tokens[self._pos]
         except IndexError:
             last_token = self._tokens[-1]
@@ -243,7 +246,6 @@ class Subparser(object):
             return cls()
 
 
-
 class PrefixSubparser(Subparser):
 
     def parse(self, parser, tokens):
@@ -262,20 +264,18 @@ class InfixSubparser(Subparser):
 # number_expr: NUMBER
 class NumberExpression(PrefixSubparser):
     def parse(self, parser, tokens):
-        pass
+        token = tokens.consume_expected('NUMBER')
+        return token.value
 
 
-# str_expr: STRING
-class StringExpression(PrefixSubparser):
-    def parse(self, parser, tokens):
-        pass
 
 
 # name_expr: NAME
 class NameExpression(PrefixSubparser):
     def parse(self, parser, tokens):
-        token = tokens.consume_expected('NAME')
-        pass
+        token:Token = tokens.consume_expected('NAME')
+        return token.value
+
 
 
 # prefix_expr: OPERATOR expr
@@ -288,7 +288,7 @@ class UnaryOperatorExpression(PrefixSubparser):
         right = Expression().parse(parser, tokens, self.get_precedence(token))
         if right is None:
             raise AbrvalgSyntaxError('Expected expression'.format(token.value), tokens.consume())
-        pass
+        return right
 
     def get_precedence(self, token):
         return self.PRECEDENCE['unary']
@@ -300,18 +300,17 @@ class GroupExpression(PrefixSubparser):
         tokens.consume_expected('LPAREN')
         right = Expression().parse(parser, tokens)
         tokens.consume_expected('RPAREN')
-        pass
+        return right
 
 
 # infix_expr: expr OPERATOR expr
 class BinaryOperatorExpression(InfixSubparser):
-
     def parse(self, parser, tokens, left):
         token = tokens.consume_expected('OPERATOR')
         right = Expression().parse(parser, tokens, self.get_precedence(token))
         if right is None:
             raise AbrvalgSyntaxError('Expected expression'.format(token.value), tokens.consume())
-        return ast.BinaryOperator(token.value, left, right)
+        return Pair(token.value,Pair(left,Pair(right,nil)))
 
     def get_precedence(self, token):
         return self.PRECEDENCE[token.value]
@@ -319,12 +318,12 @@ class BinaryOperatorExpression(InfixSubparser):
 
 # call_expr: NAME LPAREN list_of_expr? RPAREN
 class CallExpression(InfixSubparser):
-
     def parse(self, parser, tokens, left):
         tokens.consume_expected('LPAREN')
         arguments = ListOfExpressions().parse(parser, tokens)
         tokens.consume_expected('RPAREN')
-        pass
+        return Pair(left,arguments)
+
 
     def get_precedence(self, token):
         return self.PRECEDENCE['call']
@@ -333,11 +332,9 @@ class CallExpression(InfixSubparser):
 # expr: number_expr | str_expr | name_expr | group_expr | array_expr | dict_expr | prefix_expr | infix_expr | call_expr
 #     | subscript_expr
 class Expression(Subparser):
-
     def get_prefix_subparser(self, token):
         return self.get_subparser(token, {
             'NUMBER': NumberExpression,
-            'STRING': StringExpression,
             'NAME': NameExpression,
             'LPAREN': GroupExpression,
             'OPERATOR': UnaryOperatorExpression,
@@ -370,74 +367,51 @@ class Expression(Subparser):
 
 
 ## list_of_expr: (expr COMMA)*
-#class ListOfExpressions(Subparser):
-#    def parse(self, parser, tokens):
-#        items = []
-#        while not tokens.is_end():
-#            exp = Expression().parse(parser, tokens)
-#            if exp is not None:
-#                items.append(exp)
-#            else:
-#                break
-#            if tokens.current().name == 'COMMA':
-#                tokens.consume_expected('COMMA')
-#            else:
-#                break
-#        return items
+class ListOfExpressions(Subparser):
+    def parse(self, parser, tokens):
+        head = None
+        p = None
+        while not tokens.is_end():
+            exp = Expression().parse(parser, tokens)
+            if exp is not None:
+                if head==None:
+                    head=Pair(exp,nil)
+                    p=head
+                else:
+                    p.second=Pair(exp,nil)
+                    p=p.second
+            else:
+                return head
+            if tokens.current().name == 'COMMA':
+                tokens.consume_expected('COMMA')
+            else:
+                return head
+        return nil
 
 
 # block: NEWLINE INDENT stmnts DEDENT
 class Block(Subparser):
-
     def parse(self, parser, tokens):
         tokens.consume_expected('NEWLINE', 'INDENT')
         statements = Statements().parse(parser, tokens)
         tokens.consume_expected('DEDENT')
-        pass
+        return statements
 
 
-# func_stmnt: FUNCTION NAME LPAREN func_params? RPAREN COLON block
-class FunctionStatement(Subparser):
-
-    # func_params: (NAME COMMA)*
-    def _parse_params(self, tokens):
-        params = []
-        if tokens.current().name == 'NAME':
-            while not tokens.is_end():
-                id_token = tokens.consume_expected('NAME')
-                params.append(id_token.value)
-                if tokens.current().name == 'COMMA':
-                    tokens.consume_expected('COMMA')
-                else:
-                    break
-        return params
-
-    def parse(self, parser, tokens):
-        tokens.consume_expected('FUNCTION')
-        id_token = tokens.consume_expected('NAME')
-        tokens.consume_expected('LPAREN')
-        arguments = self._parse_params(tokens)
-        tokens.consume_expected('RPAREN', 'COLON')
-        block = Block().parse(parser, tokens)
-        if block is None:
-            raise AbrvalgSyntaxError('Expected function body', tokens.current())
-        pass
 
 
 # assing_stmnt: expr ASSIGN expr NEWLINE
 class AssignmentStatement(Subparser):
-
     def parse(self, parser, tokens, left):
         tokens.consume_expected('ASSIGN')
         right = Expression().parse(parser, tokens)
         tokens.consume_expected('NEWLINE')
-        pass
+        return Pair("define",Pair(left,Pair(right,nil)))
 
 
 # expr_stmnt: assing_stmnt
 #           | expr NEWLINE
 class ExpressionStatement(Subparser):
-
     def parse(self, parser, tokens):
         exp = Expression().parse(parser, tokens)
         if exp is not None:
@@ -448,45 +422,63 @@ class ExpressionStatement(Subparser):
                 return exp
 
 
-# stmnts: stmnt*
-class Statements(Subparser):
-
-    def get_statement_subparser(self, token):
-        return self.get_subparser(token, {
-            'FUNCTION': FunctionStatement,
-        }, ExpressionStatement)
-
-    def parse(self, parser, tokens):
-        statements = []
-        while not tokens.is_end():
-            statement = self.get_statement_subparser(tokens.current()).parse(parser, tokens)
-            if statement is not None:
-                statements.append(statement)
-            else:
-                break
-        return statements
-
 
 # func_stmnt: FUNCTION NAME LPAREN func_params? RPAREN COLON block
 class FunctionStatement(Subparser):
     # func_params: (NAME COMMA)*
     def _parse_params(self, tokens):
-        pass
-
+        head=None
+        p=None
+        if tokens.current().name == 'NAME':
+            while not tokens.is_end():
+                id_token = tokens.consume_expected('NAME')
+                if head==None:
+                    head = Pair(id_token.value,nil)
+                    p=head
+                else:
+                    p.second=Pair(id_token.value,nil)
+                    p = p.second
+                if tokens.current().name == 'COMMA':
+                    tokens.consume_expected('COMMA')
+                else:
+                    return head
+        return nil
     def parse(self, parser, tokens):
-        pass
+        tokens.consume_expected('FUNCTION')
+        id_token = tokens.consume_expected('NAME')
+        tokens.consume_expected('LPAREN')
+        arguments = self._parse_params(tokens)
+        tokens.consume_expected('RPAREN', 'COLON')
+        block = Block().parse(parser, tokens)
+        return Pair("define",Pair(Pair(id_token.value,arguments),block))
+
+
 
 
 # stmnts: stmnt*
 class Statements(Subparser):
-    def parse(self, parser, tokens):
-        pass
+    def get_statement_subparser(self, token):
+            return self.get_subparser(token, {'FUNCTION': FunctionStatement }, ExpressionStatement)
+
+    def parse(self, parser, tokens:TokenStream):
+        head=Pair(self.get_statement_subparser(tokens.current()).parse(parser, tokens),nil)
+        statement=head
+        while not tokens.is_end():
+            if(tokens.current().name=="DEDENT"):
+                break
+            statement.second=Pair(self.get_statement_subparser(tokens.current()).parse(parser, tokens),nil)
+            statement=statement.second
+        return head
+
 
 
 # prog: stmnts
 class Program(Subparser):
     def parse(self, parser, tokens):
-        pass
+        statements = Statements().parse(parser, tokens)
+        tokens.expect_end()
+        return statements
+
 
 
 class Parser(object):
