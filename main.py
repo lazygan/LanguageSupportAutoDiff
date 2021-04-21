@@ -1,7 +1,7 @@
 """A Scheme interpreter and its read-eval-print loop."""
 
 
-from scheme_parser import Buffer,scheme_read,tokenize_line
+from parseres.scheme_parser import Buffer,scheme_read,tokenize_line
 from interpretor_autodiff import  *
 
 
@@ -36,7 +36,7 @@ def to_raw_expression(pc):
 
 
 import argparse
-from gan_parser import Lexer,AbrvalgSyntaxError,report_syntax_error,TokenStream,Parser
+from parseres.gan_parser import Lexer,AbrvalgSyntaxError,report_syntax_error,TokenStream,Parser
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Garment DSL Demo')
