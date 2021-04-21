@@ -1,0 +1,6 @@
+This is a simple demo for language parsing and automatic diﬀerentiation	calculation.
+
+There are two kind of parsers ,which support Scheme like syntax and Python like syntax.
+
+It's still under development,but main idea was finished.
+
